@@ -11,7 +11,7 @@ import (
 )
 
 func (repo *MongoRepository) Attendance(attendance_type, id string) error {
-	fmt.Println(id, "checking in")
+	fmt.Println(id, "checking ", attendance_type)
 	eid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err

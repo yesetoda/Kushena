@@ -23,21 +23,29 @@ func NewGinRoute(controller controllers.ContollerInterface,auth auth_services.Au
 func (r *GinRoute) Run() error {
 	router := gin.Default()
 	router.GET("/", r.Controller.Help)
+	router.POST("/employee/login", r.Controller.Login)
 
 	// self actions
 	router.POST("/checkin",r.Auth.AuthenticationMiddleware(), r.Controller.CheckIn)
 	router.POST("/checkout",r.Auth.AuthenticationMiddleware(), r.Controller.CheckOut)
 
-	router.GET("/report", r.Controller.Report)
-
-	router.POST("/employee/login", r.Controller.Login)
-
-	router.POST("/employee",r.Auth.RoleMiddleware("Manager"), r.Controller.CreateEmployee)
-	router.GET("/employee/:id", r.Auth.RoleMiddleware("Manager"), r.Controller.GetEmployeeById)
-	router.PATCH("/employee",r.Auth.RoleMiddleware("Manager"), r.Controller.UpdateEmployee)
-	router.DELETE("/employee/:id",r.Auth.RoleMiddleware("Manager"), r.Controller.DeleteEmployee)
-	router.GET("/employees",r.Auth.RoleMiddleware("Manager"), r.Controller.GetAllEmployees)
-
+	report := router.Group("/report")
+	report.Use(r.Auth.RoleMiddleware("Manager"))
+	{
+		report.GET("/daily", r.Controller.DailyReport)
+		report.GET("/weekly", r.Controller.WeeklyReport)
+		report.GET("/monthly", r.Controller.MonthlyReport)
+		report.GET("/yearly", r.Controller.YearlyReport)
+	}
+	manager := router.Group("/manage")
+	manager.Use(r.Auth.RoleMiddleware("Manager"))
+	{
+			manager.POST("/employee", r.Controller.CreateEmployee)
+			manager.GET("/employee/:id", r.Controller.GetEmployeeById)
+			manager.PATCH("/employee", r.Controller.UpdateEmployee)
+			manager.DELETE("/employee/:id", r.Controller.DeleteEmployee)
+			manager.GET("/employees", r.Controller.GetAllEmployees)
+	}
 	actions := router.Group("/action")
 	actions.Use(r.Auth.AuthenticationMiddleware())
 	{
@@ -59,7 +67,7 @@ func (r *GinRoute) Run() error {
 		actions.GET("/drink/:id", r.Controller.GetDrinkById)
 		actions.GET("/drinks", r.Controller.GetAllDrinks)
 	}
-
+	
 	router.NoMethod(func(c *gin.Context) {
 		c.JSON(404, gin.H{"message": "Method not allowed"})
 	})

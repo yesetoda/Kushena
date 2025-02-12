@@ -17,7 +17,10 @@ type ContollerInterface interface {
 	CheckIn(ctx *gin.Context)
 	CheckOut(ctx *gin.Context)
 
-	Report(c *gin.Context)
+	DailyReport(c *gin.Context)
+	MonthlyReport(c *gin.Context)
+	WeeklyReport(c *gin.Context)
+	YearlyReport(c *gin.Context)
 
 	CreateOrder(ctx *gin.Context)
 	UpdateOrder(ctx *gin.Context)

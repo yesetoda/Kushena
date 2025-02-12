@@ -2,10 +2,12 @@ package repositories
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/yesetoda/Kushena/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"github.com/yesetoda/Kushena/models"
 )
 
 func (repo *MongoRepository) CreateDrink(drink *models.Drink) error {
@@ -15,7 +17,13 @@ func (repo *MongoRepository) CreateDrink(drink *models.Drink) error {
 
 }
 func (repo *MongoRepository) UpdateDrink(drink *models.Drink) error {
-	_, err := repo.DrinkCollection.UpdateOne(context.Background(), bson.M{"_id": drink.Id}, bson.M{"$set": drink})
+	res, err := repo.DrinkCollection.UpdateOne(context.Background(), bson.M{"_id": drink.Id}, bson.M{"$set": drink})
+	if err != nil {
+		return err
+	}
+	if res.MatchedCount == 0 {
+		return fmt.Errorf("drink not found")
+	}
 	return err
 
 }
@@ -24,7 +32,14 @@ func (repo *MongoRepository) DeleteDrink(id string) error {
 	if err != nil {
 		return err
 	}
-	_, err = repo.DrinkCollection.DeleteOne(context.Background(), bson.M{"_id": did})
+	res, err := repo.DrinkCollection.DeleteOne(context.Background(), bson.M{"_id": did})
+	if err != nil {
+		return err
+	}
+	if res.DeletedCount == 0 {
+		return fmt.Errorf("drink not found")
+	}
+
 	return err
 
 }

@@ -14,9 +14,6 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"gonum.org/v1/plot"
-	"gonum.org/v1/plot/plotter"
-	"gonum.org/v1/plot/vg"
 
 	"github.com/yesetoda/Kushena/models"
 
@@ -46,11 +43,6 @@ func getReportDir(period string) string {
 // Report generates all reports concurrently for daily, weekly, monthly, and yearly periods.
 func (repo *MongoRepository) Report(interval string) {
 	endDate := time.Now()
-	// Define time ranges
-	beforeDay := endDate.AddDate(0, 0, -1)
-	beforeWeek := endDate.AddDate(0, 0, -7)
-	beforeMonth := endDate.AddDate(0, -1, 0)
-	beforeYear := endDate.AddDate(-1, 0, 0)
 
 	log.Println("📊 Starting Kushena Business Analytics Report generation...")
 
@@ -58,7 +50,8 @@ func (repo *MongoRepository) Report(interval string) {
 	wg.Add(1)
 	if interval == "daily" {
 		// Daily Report
-	
+
+		beforeDay := endDate.AddDate(0, 0, -1)
 		go func() {
 			defer wg.Done()
 			log.Println("Generating Daily Reports...")
@@ -68,34 +61,36 @@ func (repo *MongoRepository) Report(interval string) {
 			generateRevenueFinancialReport(repo.OrderCollection, beforeDay, endDate, "Daily")
 			log.Println("Daily Reports complete.")
 		}()
-	}else if interval == "weekly" {
-	
-		
-			// Weekly Report
-			go func() {
-				defer wg.Done()
-				log.Println("Generating Weekly Reports...")
-				generateOrderReport(repo.OrderCollection, beforeWeek, endDate, "Weekly")
-				generateEmployeePerformanceReport(repo.AttendanceCollection, repo.OrderCollection, beforeWeek, endDate, "Weekly")
-				generateOperationalEfficiencyReport(repo.AttendanceCollection, repo.OrderCollection, beforeWeek, endDate, "Weekly")
-				generateRevenueFinancialReport(repo.OrderCollection, beforeWeek, endDate, "Weekly")
-				log.Println("Weekly Reports complete.")
-			}()
-	} else if interval == "monthly" {
+	} else if interval == "weekly" {
+		// Weekly Report
 
-		
-			// Monthly Report
-			go func() {
-				defer wg.Done()
-				log.Println("Generating Monthly Reports...")
-				generateOrderReport(repo.OrderCollection, beforeMonth, endDate, "Monthly")
-				generateEmployeePerformanceReport(repo.AttendanceCollection, repo.OrderCollection, beforeMonth, endDate, "Monthly")
-				generateOperationalEfficiencyReport(repo.AttendanceCollection, repo.OrderCollection, beforeMonth, endDate, "Monthly")
-				generateRevenueFinancialReport(repo.OrderCollection, beforeMonth, endDate, "Monthly")
-				log.Println("Monthly Reports complete.")
-			}()
-	}else if interval == "yearly" {
+		beforeWeek := endDate.AddDate(0, 0, -7)
+		go func() {
+			defer wg.Done()
+			log.Println("Generating Weekly Reports...")
+			generateOrderReport(repo.OrderCollection, beforeWeek, endDate, "Weekly")
+			generateEmployeePerformanceReport(repo.AttendanceCollection, repo.OrderCollection, beforeWeek, endDate, "Weekly")
+			generateOperationalEfficiencyReport(repo.AttendanceCollection, repo.OrderCollection, beforeWeek, endDate, "Weekly")
+			generateRevenueFinancialReport(repo.OrderCollection, beforeWeek, endDate, "Weekly")
+			log.Println("Weekly Reports complete.")
+		}()
+	} else if interval == "monthly" {
+		// Monthly Report
+
+		beforeMonth := endDate.AddDate(0, -1, 0)
+		go func() {
+			defer wg.Done()
+			log.Println("Generating Monthly Reports...")
+			generateOrderReport(repo.OrderCollection, beforeMonth, endDate, "Monthly")
+			generateEmployeePerformanceReport(repo.AttendanceCollection, repo.OrderCollection, beforeMonth, endDate, "Monthly")
+			generateOperationalEfficiencyReport(repo.AttendanceCollection, repo.OrderCollection, beforeMonth, endDate, "Monthly")
+			generateRevenueFinancialReport(repo.OrderCollection, beforeMonth, endDate, "Monthly")
+			log.Println("Monthly Reports complete.")
+		}()
+	} else if interval == "yearly" {
 		// Yearly Report
+
+		beforeYear := endDate.AddDate(-1, 0, 0)
 		go func() {
 			defer wg.Done()
 			log.Println("Generating Yearly Reports...")
@@ -112,7 +107,7 @@ func (repo *MongoRepository) Report(interval string) {
 }
 
 // ─── ORDER REPORT (Business Analytics & Sales Trends) ──────────────────────────
-func generateOrderReport(collection *mongo.Collection, startDate, endDate time.Time, period string) {
+func generateOrderReport(collection *mongo.Collection, startDate, endDate time.Time, period string) []models.Order{
 	log.Printf("Generating %s Order Report...\n", period)
 	filter := bson.M{"created_at": bson.M{"$gte": startDate, "$lt": endDate}}
 	cursor, err := collection.Find(context.TODO(), filter)
@@ -200,13 +195,11 @@ func generateOrderReport(collection *mongo.Collection, startDate, endDate time.T
 	// Save reports and graphs
 	reportDir := getReportDir(period)
 	saveCSV(filepath.Join(reportDir, "order_report_"+period+".csv"), []string{"Order ID", "Total Price", "Created At"}, orders)
-	// saveJSON(filepath.Join(reportDir, "order_report_"+period+".json"), orders)
-	generateBarGraph(peakHours, filepath.Join(reportDir, "peak_hours_"+period+".png"), "Hour", "Orders", "Peak Sales Hours")
-	generateBarGraph(itemSales, filepath.Join(reportDir, "item_sales_"+period+".png"), "Item", "Sales", "Most Sold Items")
+	return orders
 }
 
 // ─── EMPLOYEE PERFORMANCE REPORT (Attendance, Sales & Efficiency) ──────────────────
-func generateEmployeePerformanceReport(attendanceCollection, orderCollection *mongo.Collection, startDate, endDate time.Time, period string) {
+func generateEmployeePerformanceReport(attendanceCollection, orderCollection *mongo.Collection, startDate, endDate time.Time, period string) map[string]interface{}{
 	log.Printf("Generating %s Employee Performance Report...\n", period)
 
 	attendanceFilter := bson.M{"time": bson.M{"$gte": startDate, "$lt": endDate}}
@@ -332,18 +325,16 @@ func generateEmployeePerformanceReport(attendanceCollection, orderCollection *mo
 		csvData = append(csvData, row)
 	}
 	saveCSVTable(filepath.Join(reportDir, "employee_report_"+period+".csv"), csvHeaders, csvData)
-	// saveJSON(filepath.Join(reportDir, "employee_report_"+period+".json"), map[string]interface{}{
-	// 	"orders":          employeeOrders,
-	// 	"revenue":         employeeRevenue,
-	// 	"avg_order":       employeeAvgOrderValue,
-	// 	"work_hours":      employeeWorkHours,
-	// 	"late_checkins":   employeeLateCount,
-	// 	"processing_time": employeeProcessingTime,
-	// 	"absentees":       absentees,
-	// })
+	return  map[string]interface{}{
+		"orders":          employeeOrders,
+		"revenue":         employeeRevenue,
+		"avg_order":       employeeAvgOrderValue,
+		"work_hours":      employeeWorkHours,
+		"late_checkins":   employeeLateCount,
+		"processing_time": employeeProcessingTime,
+		"absentees":       absentees,
+	}
 	// Generate graphs for visualizing orders and revenue per employee
-	generateBarGraphInt(employeeOrders, filepath.Join(reportDir, "employee_orders_"+period+".png"), "Employee", "Orders", "Orders Per Employee")
-	generateBarGraphFloat(employeeRevenue, filepath.Join(reportDir, "employee_revenue_"+period+".png"), "Employee", "Revenue ($)", "Revenue Per Employee")
 }
 
 // ─── OPERATIONAL EFFICIENCY REPORT (Utilization, Idle Time, Fraud & Mismanagement) ───
@@ -428,7 +419,7 @@ func generateOperationalEfficiencyReport(attendanceCollection, orderCollection *
 }
 
 // ─── REVENUE & FINANCIAL REPORT (Revenue Breakdown, Order Value Distribution, Profitability Metrics) ───
-func generateRevenueFinancialReport(orderCollection *mongo.Collection, startDate, endDate time.Time, period string) {
+func generateRevenueFinancialReport(orderCollection *mongo.Collection, startDate, endDate time.Time, period string) map[string]interface{}{
 	log.Printf("Generating %s Revenue & Financial Report...\n", period)
 	filter := bson.M{"created_at": bson.M{"$gte": startDate, "$lt": endDate}}
 	cursor, err := orderCollection.Find(context.TODO(), filter)
@@ -503,23 +494,16 @@ func generateRevenueFinancialReport(orderCollection *mongo.Collection, startDate
 		{"Avg Items Per Order", fmt.Sprintf("%.2f", avgItemsPerOrder)},
 	}
 	saveCSVTable(filepath.Join(reportDir, "revenue_financial_"+period+".csv"), csvHeaders, csvData)
-	// saveJSON(filepath.Join(reportDir, "revenue_financial_"+period+".json"), map[string]interface{}{
-	// 	"total_revenue":       totalRevenue,
-	// 	"total_orders":        orderCount,
-	// 	"min_order_value":     minVal,
-	// 	"max_order_value":     maxVal,
-	// 	"avg_order_value":     avgVal,
-	// 	"food_share_percent":  foodShare,
-	// 	"drink_share_percent": drinkShare,
-	// 	"avg_items_per_order": avgItemsPerOrder,
-	// })
-	// Generate graph for order value distribution
-	orderValueDist := map[string]int{
-		"Min": int(minVal),
-		"Avg": int(avgVal),
-		"Max": int(maxVal),
-	}
-	generateBarGraphInt(orderValueDist, filepath.Join(reportDir, "order_value_dist_"+period+".png"), "Value", "Amount", "Order Value Distribution")
+	return map[string]interface{}{
+			"total_revenue":       totalRevenue,
+			"total_orders":        orderCount,
+			"min_order_value":     minVal,
+			"max_order_value":     maxVal,
+			"avg_order_value":     avgVal,
+			"food_share_percent":  foodShare,
+			"drink_share_percent": drinkShare,
+			"avg_items_per_order": avgItemsPerOrder,
+		}
 }
 
 // ─── UTILITY FUNCTIONS ─────────────────────────────────────────────
@@ -574,78 +558,6 @@ func saveCSV(filename string, headers []string, data interface{}) {
 	}
 }
 
-// func saveJSON(filename string, data interface{}) {
-// 	jsonData, err := json.MarshalIndent(data, "", "  ")
-// 	if err != nil {
-// 		log.Fatalf("Failed to marshal JSON for %s: %v", filename, err)
-// 	}
-// 	if err := os.WriteFile(filename, jsonData, 0644); err != nil {
-// 		log.Fatalf("Failed to write JSON file %s: %v", filename, err)
-// 	}
-// }
-
-func generateBarGraph(data map[string]int, filename, xlabel, ylabel, title string) {
-	p := plot.New()
-	p.Title.Text = title
-	p.X.Label.Text = xlabel
-	p.Y.Label.Text = ylabel
-
-	keys := make([]string, 0, len(data))
-	for k := range data {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	values := make(plotter.Values, len(keys))
-	for i, key := range keys {
-		values[i] = float64(data[key])
-	}
-
-	bar, err := plotter.NewBarChart(values, vg.Points(20))
-	if err != nil {
-		log.Fatalf("Error creating bar chart: %v", err)
-	}
-	p.Add(bar)
-	p.NominalX(keys...)
-
-	if err := p.Save(5*vg.Inch, 3*vg.Inch, filename); err != nil {
-		log.Fatalf("Error saving bar graph to %s: %v", filename, err)
-	}
-}
-
-func generateBarGraphInt(data map[string]int, filename, xlabel, ylabel, title string) {
-	generateBarGraph(data, filename, xlabel, ylabel, title)
-}
-
-func generateBarGraphFloat(data map[string]float64, filename, xlabel, ylabel, title string) {
-	p := plot.New()
-	p.Title.Text = title
-	p.X.Label.Text = xlabel
-	p.Y.Label.Text = ylabel
-
-	keys := make([]string, 0, len(data))
-	for k := range data {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	values := make(plotter.Values, len(keys))
-	for i, key := range keys {
-		values[i] = data[key]
-	}
-
-	bar, err := plotter.NewBarChart(values, vg.Points(20))
-	if err != nil {
-		log.Fatalf("Error creating float bar chart: %v", err)
-	}
-	p.Add(bar)
-	p.NominalX(keys...)
-
-	if err := p.Save(5*vg.Inch, 3*vg.Inch, filename); err != nil {
-		log.Fatalf("Error saving float bar graph to %s: %v", filename, err)
-	}
-}
-
 type kv struct {
 	Key   string
 	Value int
@@ -689,19 +601,18 @@ func getMonthlyOrderCounts(orders []models.Order) map[string]int {
 	return monthly
 }
 
-
-func (repo *MongoRepository) DailyReport(){
+func (repo *MongoRepository) DailyReport() {
 	repo.Report("daily")
 }
 
-func (repo *MongoRepository) WeeklyReport(){
+func (repo *MongoRepository) WeeklyReport() {
 	repo.Report("weekly")
 }
 
-func (repo *MongoRepository) MonthlyReport(){
+func (repo *MongoRepository) MonthlyReport() {
 	repo.Report("monthly")
 }
 
-func (repo *MongoRepository) YearlyReport(){
+func (repo *MongoRepository) YearlyReport() {
 	repo.Report("yearly")
 }

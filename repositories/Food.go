@@ -2,10 +2,12 @@ package repositories
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/yesetoda/Kushena/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"github.com/yesetoda/Kushena/models"
 )
 
 func (repo *MongoRepository) CreateFood(food models.Food) error {
@@ -15,8 +17,14 @@ func (repo *MongoRepository) CreateFood(food models.Food) error {
 
 }
 func (repo *MongoRepository) UpdateFood(food *models.Food) error {
-	_, err := repo.FoodCollection.UpdateOne(context.Background(), bson.M{"_id": food.Id}, bson.M{"$set": food})
-	return err
+	res, err := repo.FoodCollection.UpdateOne(context.Background(), bson.M{"_id": food.Id}, bson.M{"$set": food})
+	if err != nil {
+		return err
+	}
+	if res.MatchedCount == 0 {
+		return fmt.Errorf("food not found")
+	}
+	return nil
 
 }
 func (repo *MongoRepository) DeleteFood(id string) error {
@@ -24,8 +32,14 @@ func (repo *MongoRepository) DeleteFood(id string) error {
 	if err != nil {
 		return err
 	}
-	_, err = repo.FoodCollection.DeleteOne(context.Background(), bson.M{"_id": fid})
-	return err
+	res, err := repo.FoodCollection.DeleteOne(context.Background(), bson.M{"_id": fid})
+	if err != nil {
+		return err
+	}
+	if res.DeletedCount == 0 {
+		return fmt.Errorf("food not found")
+	}
+	return nil
 
 }
 func (repo *MongoRepository) GetFoodById(id string) (*models.Food, error) {

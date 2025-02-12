@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/yesetoda/Kushena/models"
+
 )
 
 type UsecaseInterface interface {
@@ -17,7 +18,10 @@ type UsecaseInterface interface {
 	CheckIn(id string) error
 	CheckOut(id string) error
 
-	Report()
+	DailyReport()
+	WeeklyReport()
+	MonthlyReport()
+	YearlyReport()
 
 	CreateOrder(order models.Order) error
 	UpdateOrder(order *models.Order) error

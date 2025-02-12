@@ -33,8 +33,11 @@ func createJWTToken(employee *models.Employee, jwtSecret string, duration time.D
 	expirationTime := time.Now().Add(duration)
 	claims := &models.Claims{
 		ID:          employee.Id,
+		Name:        employee.Name,
 		Email:       employee.Email,
 		PhoneNumber: employee.PhoneNumber,
+		Role:        employee.Role,
+		Addresses:   employee.Addresses,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 			IssuedAt:  time.Now().Unix(),

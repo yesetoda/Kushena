@@ -2,10 +2,12 @@ package repositories
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/yesetoda/Kushena/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"github.com/yesetoda/Kushena/models"
 )
 
 func (repo *MongoRepository) CreateOrder(order models.Order) error {
@@ -15,7 +17,13 @@ func (repo *MongoRepository) CreateOrder(order models.Order) error {
 }
 
 func (repo *MongoRepository) UpdateOrder(order *models.Order) error {
-	_, err := repo.OrderCollection.UpdateOne(context.Background(), bson.M{"_id": order.Id}, bson.M{"$set": order})
+	res, err := repo.OrderCollection.UpdateOne(context.Background(), bson.M{"_id": order.Id}, bson.M{"$set": order})
+	if err != nil {
+		return err
+	}
+	if res.MatchedCount == 0 {
+		return fmt.Errorf("order not found")
+	}
 	return err
 
 }
@@ -24,7 +32,13 @@ func (repo *MongoRepository) DeleteOrder(id string) error {
 	if err != nil {
 		return err
 	}
-	_, err = repo.OrderCollection.DeleteOne(context.Background(), bson.M{"_id": oid})
+	res, err := repo.OrderCollection.DeleteOne(context.Background(), bson.M{"_id": oid})
+	if err != nil {
+		return err
+	}
+	if res.DeletedCount == 0 {
+		return fmt.Errorf("order not found")
+	}
 	return err
 
 }

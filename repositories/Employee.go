@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/yesetoda/Kushena/infrastructures/password_services"
-	"github.com/yesetoda/Kushena/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"github.com/yesetoda/Kushena/infrastructures/password_services"
+	"github.com/yesetoda/Kushena/models"
+
 )
 
 func (repo *MongoRepository) CreateEmployee(Employee *models.Employee) error {
@@ -39,8 +41,14 @@ func (repo *MongoRepository) GetEmployeeById(id string) (*models.Employee, error
 	return &employee, err
 }
 func (repo *MongoRepository) UpdateEmployee(Employee *models.Employee) error {
-	_, err := repo.EmployeeCollection.UpdateOne(context.TODO(), bson.M{"_id": Employee.Id}, bson.M{"$set": Employee})
-	return err
+	res, err := repo.EmployeeCollection.UpdateOne(context.TODO(), bson.M{"_id": Employee.Id}, bson.M{"$set": Employee})
+	if err != nil {
+		return err
+	}
+	if res.MatchedCount == 0 {
+        return fmt.Errorf("employee not found")
+    }
+	return nil
 
 }
 func (repo *MongoRepository) DeleteEmployee(id string) error {
@@ -57,8 +65,14 @@ func (repo *MongoRepository) DeleteEmployee(id string) error {
 	if emp.Role == "Manager" {
 		return fmt.Errorf("manager cannot be deleted")
 	}
-	_, err = repo.EmployeeCollection.DeleteOne(context.TODO(), bson.M{"_id": eid})
-	return err
+	res, err := repo.EmployeeCollection.DeleteOne(context.TODO(), bson.M{"_id": eid})
+	if err != nil {
+        return err
+    }
+	if res.DeletedCount == 0 {
+		return fmt.Errorf("employee not found")
+    }
+    return nil
 
 }
 func (repo *MongoRepository) GetAllEmployees() ([]models.Employee, error) {
