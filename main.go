@@ -11,11 +11,12 @@ import (
 	"github.com/yesetoda/Kushena/repositories"
 	"github.com/yesetoda/Kushena/router"
 	"github.com/yesetoda/Kushena/usecases"
+
 )
 
 func scheduleReports(scheduler *gocron.Scheduler, repo repositories.RepositoryInterface, reportTime, reportDay, reportMonth string) {
 	// Daily Report
-	scheduler.Every(1).Day().At(reportTime).Do(repo.DailyReport)
+	scheduler.Every(1).Day().At(reportTime).Do(repo.DailyReport2)
 
 	// Weekly Report (on specified day)
 	if reportDay != "" {
@@ -26,7 +27,7 @@ func scheduleReports(scheduler *gocron.Scheduler, repo repositories.RepositoryIn
 
 		weekDay, exists := weekDays[reportDay]
 		if exists {
-			_, err := scheduler.Every(1).Week().Weekday(weekDay).At(reportTime).Do(repo.WeeklyReport)
+			_, err := scheduler.Every(1).Week().Weekday(weekDay).At(reportTime).Do(repo.WeeklyReport2)
 			if err != nil {
 				fmt.Println("Error scheduling weekly report:", err)
 			}
@@ -36,14 +37,14 @@ func scheduleReports(scheduler *gocron.Scheduler, repo repositories.RepositoryIn
 	}
 
 	// Monthly Report (on 1st of each month)
-	scheduler.Every(1).Month(1).At(reportTime).Do(repo.MonthlyReport)
+	scheduler.Every(1).Month(1).At(reportTime).Do(repo.MonthlyReport2)
 
 	// Yearly Report (on January 1st)
 	scheduler.Every(1).Day().At(reportTime).Do(func() {
 		now := time.Now()
 		if now.Month().String() == reportMonth && now.Day() == 1 {
 			fmt.Println("📆 Running Yearly Report...")
-			repo.YearlyReport()
+			repo.YearlyReport2()
 		}
 	})
 }
