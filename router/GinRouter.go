@@ -50,7 +50,6 @@ func (r *GinRoute) Run() error {
 	router.GET("/", r.Controller.Help)
 	router.POST("/employee/login", r.Controller.Login)
 
-	// self actions
 	router.POST("/checkin", r.Auth.AuthenticationMiddleware(), r.Controller.CheckIn)
 	router.POST("/checkout", r.Auth.AuthenticationMiddleware(), r.Controller.CheckOut)
 
