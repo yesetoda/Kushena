@@ -4,11 +4,10 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
-
 )
 
 type FoodOrder struct {
-	FoodId   primitive.ObjectID `json:"food_id" bson:"food_id"`
+	FoodId   primitive.ObjectID `json:"food_id" bson:"food_id "`
 	Quantity float64            `json:"quantity" bson:"quantity"`
 }
 
@@ -19,6 +18,7 @@ type DrinkOrder struct {
 type Order struct {
 	Id         primitive.ObjectID `json:"id" bson:"_id"`
 	EmployeeId primitive.ObjectID `json:"employee_id" bson:"employee_id"`
+	TableId    string             `json:"table_id" bson:"table_id"`
 	Foods      []FoodOrder        `json:"foods" bson:"foods"`
 	Drinks     []DrinkOrder       `json:"drinks" bson:"drinks"`
 
