@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -18,8 +19,6 @@ import (
 	"github.com/yesetoda/kushena/models"
 
 )
-
-// getReportDir returns the folder for a given period (and creates it if needed)
 func getReportDir(period string) string {
 	var dir string
 	switch period {
@@ -41,73 +40,147 @@ func getReportDir(period string) string {
 }
 
 // Report generates all reports concurrently for daily, weekly, monthly, and yearly periods.
-func (repo *MongoRepository) Report(interval string) {
+// It returns the combined JSON report as []byte along with any error.
+func (repo *MongoRepository) Report(interval string) ([]byte, error) {
 	endDate := time.Now()
-
+	reportDir := getReportDir(interval)
 	log.Println("📊 Starting Kushena Business Analytics Report generation...")
 
 	var wg sync.WaitGroup
 	wg.Add(1)
-	if interval == "daily" {
-		// Daily Report
 
+	// Variables to capture the result from the goroutine.
+	var resultData []byte
+	var resultErr error
+
+	switch interval {
+	case "daily", "Daily":
 		beforeDay := endDate.AddDate(0, 0, -1)
 		go func() {
 			defer wg.Done()
 			log.Println("Generating Daily Reports...")
-			generateOrderReport(repo.OrderCollection, beforeDay, endDate, "Daily")
-			generateEmployeePerformanceReport(repo.AttendanceCollection, repo.OrderCollection, beforeDay, endDate, "Daily")
-			generateOperationalEfficiencyReport(repo.AttendanceCollection, repo.OrderCollection, beforeDay, endDate, "Daily")
-			generateRevenueFinancialReport(repo.OrderCollection, beforeDay, endDate, "Daily")
-			log.Println("Daily Reports complete.")
-		}()
-	} else if interval == "weekly" {
-		// Weekly Report
+			orderReport := generateOrderReport(repo.OrderCollection, beforeDay, endDate, "Daily")
+			employeePerformanceReport := generateEmployeePerformanceReport(repo.AttendanceCollection, repo.OrderCollection, beforeDay, endDate, "Daily")
+			operationalEfficiencyReport := generateOperationalEfficiencyReport(repo.AttendanceCollection, repo.OrderCollection, beforeDay, endDate, "Daily")
+			revenueFinancialReport := generateRevenueFinancialReport(repo.OrderCollection, beforeDay, endDate, "Daily")
 
+			combined := map[string]interface{}{
+				"order_report":                  orderReport,
+				"employee_performance_report":   employeePerformanceReport,
+				"operational_efficiency_report": operationalEfficiencyReport,
+				"revenue_financial_report":      revenueFinancialReport,
+			}
+			b, err := json.MarshalIndent(combined, "", "  ")
+			if err != nil {
+				resultErr = err
+				return
+			}
+			resultData = b
+			outfile := filepath.Join(reportDir, "combined_report_daily.json")
+			if err := os.WriteFile(outfile, b, 0644); err != nil {
+				log.Printf("Error writing Daily JSON report: %v", err)
+			} else {
+				log.Println("Daily Reports complete. Combined report saved to", outfile)
+			}
+		}()
+	case "weekly", "Weekly":
 		beforeWeek := endDate.AddDate(0, 0, -7)
 		go func() {
 			defer wg.Done()
 			log.Println("Generating Weekly Reports...")
-			generateOrderReport(repo.OrderCollection, beforeWeek, endDate, "Weekly")
-			generateEmployeePerformanceReport(repo.AttendanceCollection, repo.OrderCollection, beforeWeek, endDate, "Weekly")
-			generateOperationalEfficiencyReport(repo.AttendanceCollection, repo.OrderCollection, beforeWeek, endDate, "Weekly")
-			generateRevenueFinancialReport(repo.OrderCollection, beforeWeek, endDate, "Weekly")
-			log.Println("Weekly Reports complete.")
-		}()
-	} else if interval == "monthly" {
-		// Monthly Report
+			orderReport := generateOrderReport(repo.OrderCollection, beforeWeek, endDate, "Weekly")
+			employeePerformanceReport := generateEmployeePerformanceReport(repo.AttendanceCollection, repo.OrderCollection, beforeWeek, endDate, "Weekly")
+			operationalEfficiencyReport := generateOperationalEfficiencyReport(repo.AttendanceCollection, repo.OrderCollection, beforeWeek, endDate, "Weekly")
+			revenueFinancialReport := generateRevenueFinancialReport(repo.OrderCollection, beforeWeek, endDate, "Weekly")
 
+			combined := map[string]interface{}{
+				"order_report":                  orderReport,
+				"employee_performance_report":   employeePerformanceReport,
+				"operational_efficiency_report": operationalEfficiencyReport,
+				"revenue_financial_report":      revenueFinancialReport,
+			}
+			b, err := json.MarshalIndent(combined, "", "  ")
+			if err != nil {
+				resultErr = err
+				return
+			}
+			resultData = b
+			outfile := filepath.Join(reportDir, "combined_report_weekly.json")
+			if err := os.WriteFile(outfile, b, 0644); err != nil {
+				log.Printf("Error writing Weekly JSON report: %v", err)
+			} else {
+				log.Println("Weekly Reports complete. Combined report saved to", outfile)
+			}
+		}()
+	case "monthly", "Monthly":
 		beforeMonth := endDate.AddDate(0, -1, 0)
 		go func() {
 			defer wg.Done()
 			log.Println("Generating Monthly Reports...")
-			generateOrderReport(repo.OrderCollection, beforeMonth, endDate, "Monthly")
-			generateEmployeePerformanceReport(repo.AttendanceCollection, repo.OrderCollection, beforeMonth, endDate, "Monthly")
-			generateOperationalEfficiencyReport(repo.AttendanceCollection, repo.OrderCollection, beforeMonth, endDate, "Monthly")
-			generateRevenueFinancialReport(repo.OrderCollection, beforeMonth, endDate, "Monthly")
-			log.Println("Monthly Reports complete.")
-		}()
-	} else if interval == "yearly" {
-		// Yearly Report
+			orderReport := generateOrderReport(repo.OrderCollection, beforeMonth, endDate, "Monthly")
+			employeePerformanceReport := generateEmployeePerformanceReport(repo.AttendanceCollection, repo.OrderCollection, beforeMonth, endDate, "Monthly")
+			operationalEfficiencyReport := generateOperationalEfficiencyReport(repo.AttendanceCollection, repo.OrderCollection, beforeMonth, endDate, "Monthly")
+			revenueFinancialReport := generateRevenueFinancialReport(repo.OrderCollection, beforeMonth, endDate, "Monthly")
 
+			combined := map[string]interface{}{
+				"order_report":                  orderReport,
+				"employee_performance_report":   employeePerformanceReport,
+				"operational_efficiency_report": operationalEfficiencyReport,
+				"revenue_financial_report":      revenueFinancialReport,
+			}
+			b, err := json.MarshalIndent(combined, "", "  ")
+			if err != nil {
+				resultErr = err
+				return
+			}
+			resultData = b
+			outfile := filepath.Join(reportDir, "combined_report_monthly.json")
+			if err := os.WriteFile(outfile, b, 0644); err != nil {
+				log.Printf("Error writing Monthly JSON report: %v", err)
+			} else {
+				log.Println("Monthly Reports complete. Combined report saved to", outfile)
+			}
+		}()
+	case "yearly", "Yearly":
 		beforeYear := endDate.AddDate(-1, 0, 0)
 		go func() {
 			defer wg.Done()
 			log.Println("Generating Yearly Reports...")
-			generateOrderReport(repo.OrderCollection, beforeYear, endDate, "Yearly")
-			generateEmployeePerformanceReport(repo.AttendanceCollection, repo.OrderCollection, beforeYear, endDate, "Yearly")
-			generateOperationalEfficiencyReport(repo.AttendanceCollection, repo.OrderCollection, beforeYear, endDate, "Yearly")
-			generateRevenueFinancialReport(repo.OrderCollection, beforeYear, endDate, "Yearly")
-			log.Println("Yearly Reports complete.")
-		}()
+			orderReport := generateOrderReport(repo.OrderCollection, beforeYear, endDate, "Yearly")
+			employeePerformanceReport := generateEmployeePerformanceReport(repo.AttendanceCollection, repo.OrderCollection, beforeYear, endDate, "Yearly")
+			operationalEfficiencyReport := generateOperationalEfficiencyReport(repo.AttendanceCollection, repo.OrderCollection, beforeYear, endDate, "Yearly")
+			revenueFinancialReport := generateRevenueFinancialReport(repo.OrderCollection, beforeYear, endDate, "Yearly")
 
+			combined := map[string]interface{}{
+				"order_report":                  orderReport,
+				"employee_performance_report":   employeePerformanceReport,
+				"operational_efficiency_report": operationalEfficiencyReport,
+				"revenue_financial_report":      revenueFinancialReport,
+			}
+			b, err := json.MarshalIndent(combined, "", "  ")
+			if err != nil {
+				resultErr = err
+				return
+			}
+			resultData = b
+			outfile := filepath.Join(reportDir, "combined_report_yearly.json")
+			if err := os.WriteFile(outfile, b, 0644); err != nil {
+				log.Printf("Error writing Yearly JSON report: %v", err)
+			} else {
+				log.Println("Yearly Reports complete. Combined report saved to", outfile)
+			}
+		}()
+	default:
+		log.Printf("Interval %s not recognized.", interval)
+		wg.Done()
 	}
 	wg.Wait()
 	log.Println("✅ All reports have been generated.")
+	return resultData, resultErr
 }
 
-// ─── ORDER REPORT (Business Analytics & Sales Trends) ──────────────────────────
-func generateOrderReport(collection *mongo.Collection, startDate, endDate time.Time, period string) []models.Order{
+// generateOrderReport produces an order report (business analytics & sales trends).
+func generateOrderReport(collection *mongo.Collection, startDate, endDate time.Time, period string) []models.Order {
 	log.Printf("Generating %s Order Report...\n", period)
 	filter := bson.M{"created_at": bson.M{"$gte": startDate, "$lt": endDate}}
 	cursor, err := collection.Find(context.TODO(), filter)
@@ -123,11 +196,11 @@ func generateOrderReport(collection *mongo.Collection, startDate, endDate time.T
 
 	totalRevenue := 0.0
 	totalOrders := len(orders)
-	peakHours := make(map[string]int)  // e.g., "09" -> count
-	itemSales := make(map[string]int)  // aggregated sales for all items
-	var orderValues []float64          // order values for distribution
-	foodSales := make(map[string]int)  // sales for foods
-	drinkSales := make(map[string]int) // sales for drinks
+	peakHours := make(map[string]int)
+	itemSales := make(map[string]int)
+	var orderValues []float64
+	foodSales := make(map[string]int)
+	drinkSales := make(map[string]int)
 
 	for _, order := range orders {
 		totalRevenue += order.TotalPrice
@@ -135,7 +208,7 @@ func generateOrderReport(collection *mongo.Collection, startDate, endDate time.T
 		hourStr := fmt.Sprintf("%02d", order.CreatedAt.Hour())
 		peakHours[hourStr]++
 		for _, food := range order.Foods {
-			key := food.FoodId.Hex() // You may map this to a food name if desired
+			key := food.FoodId.Hex()
 			itemSales[key]++
 			foodSales[key]++
 		}
@@ -171,7 +244,6 @@ func generateOrderReport(collection *mongo.Collection, startDate, endDate time.T
 		monthlyOrders = getMonthlyOrderCounts(orders)
 	}
 
-	// Terminal output
 	fmt.Printf("\n📌 %s Order Report\n", period)
 	fmt.Printf("Total Orders: %d | Total Revenue: $%.2f\n", totalOrders, totalRevenue)
 	fmt.Printf("Order Value Distribution: Min=$%.2f, Max=$%.2f, Avg=$%.2f\n", minVal, maxVal, avgVal)
@@ -192,14 +264,13 @@ func generateOrderReport(collection *mongo.Collection, startDate, endDate time.T
 		fmt.Println("Monthly Orders (Seasonal Demand):", monthlyOrders)
 	}
 
-	// Save reports and graphs
 	reportDir := getReportDir(period)
 	saveCSV(filepath.Join(reportDir, "order_report_"+period+".csv"), []string{"Order ID", "Total Price", "Created At"}, orders)
 	return orders
 }
 
-// ─── EMPLOYEE PERFORMANCE REPORT (Attendance, Sales & Efficiency) ──────────────────
-func generateEmployeePerformanceReport(attendanceCollection, orderCollection *mongo.Collection, startDate, endDate time.Time, period string) map[string]interface{}{
+// generateEmployeePerformanceReport produces an employee performance report (attendance, sales & efficiency).
+func generateEmployeePerformanceReport(attendanceCollection, orderCollection *mongo.Collection, startDate, endDate time.Time, period string) map[string]interface{} {
 	log.Printf("Generating %s Employee Performance Report...\n", period)
 
 	attendanceFilter := bson.M{"time": bson.M{"$gte": startDate, "$lt": endDate}}
@@ -224,7 +295,6 @@ func generateEmployeePerformanceReport(attendanceCollection, orderCollection *mo
 		log.Fatalf("Error decoding orders for %s report: %v", period, err)
 	}
 
-	// Attendance Insights: use first checkin and subsequent checkouts to compute work hours.
 	employeeWorkHours := make(map[string]time.Duration)
 	employeeLateCount := make(map[string]int)
 	employeeAttendanceCount := make(map[string]int)
@@ -234,11 +304,10 @@ func generateEmployeePerformanceReport(attendanceCollection, orderCollection *mo
 	for _, rec := range attendances {
 		empID := rec.EmployeeID.Hex()
 		employeeAttendanceCount[empID]++
-		if rec.Type == "in" { // "in" denotes checkin
+		if rec.Type == "in" {
 			if rec.Time.Hour() >= lateThresholdHour {
 				employeeLateCount[empID]++
 			}
-			// Record the first checkin if not already recorded
 			if _, exists := checkInTimes[empID]; !exists {
 				checkInTimes[empID] = rec.Time
 			}
@@ -261,7 +330,6 @@ func generateEmployeePerformanceReport(attendanceCollection, orderCollection *mo
 		}
 	}
 
-	// Sales Performance Per Employee
 	employeeOrders := make(map[string]int)
 	employeeRevenue := make(map[string]float64)
 	employeeOrderTimestamps := make(map[string][]time.Time)
@@ -278,7 +346,6 @@ func generateEmployeePerformanceReport(attendanceCollection, orderCollection *mo
 		}
 	}
 
-	// Efficiency Metrics: Average order processing time.
 	employeeProcessingTime := make(map[string]time.Duration)
 	for empID, timestamps := range employeeOrderTimestamps {
 		if len(timestamps) > 1 {
@@ -325,7 +392,7 @@ func generateEmployeePerformanceReport(attendanceCollection, orderCollection *mo
 		csvData = append(csvData, row)
 	}
 	saveCSVTable(filepath.Join(reportDir, "employee_report_"+period+".csv"), csvHeaders, csvData)
-	return  map[string]interface{}{
+	return map[string]interface{}{
 		"orders":          employeeOrders,
 		"revenue":         employeeRevenue,
 		"avg_order":       employeeAvgOrderValue,
@@ -334,11 +401,10 @@ func generateEmployeePerformanceReport(attendanceCollection, orderCollection *mo
 		"processing_time": employeeProcessingTime,
 		"absentees":       absentees,
 	}
-	// Generate graphs for visualizing orders and revenue per employee
 }
 
-// ─── OPERATIONAL EFFICIENCY REPORT (Utilization, Idle Time, Fraud & Mismanagement) ───
-func generateOperationalEfficiencyReport(attendanceCollection, orderCollection *mongo.Collection, startDate, endDate time.Time, period string) {
+// generateOperationalEfficiencyReport produces an operational efficiency report (utilization, idle time, etc.).
+func generateOperationalEfficiencyReport(attendanceCollection, orderCollection *mongo.Collection, startDate, endDate time.Time, period string) map[string]interface{} {
 	log.Printf("Generating %s Operational Efficiency Report...\n", period)
 	attendanceFilter := bson.M{"time": bson.M{"$gte": startDate, "$lt": endDate}}
 	attendanceCursor, err := attendanceCollection.Find(context.TODO(), attendanceFilter)
@@ -415,11 +481,18 @@ func generateOperationalEfficiencyReport(attendanceCollection, orderCollection *
 		csvData = append(csvData, row)
 	}
 	saveCSVTable(filepath.Join(reportDir, "operational_efficiency_"+period+".csv"), csvHeaders, csvData)
-	// Optionally, you can add graph generation here
+
+	result := map[string]interface{}{
+		"employee_attendance_count": employeeAttendanceCount,
+		"order_to_attendance_ratio": orderToAttendance,
+		"idle_employees":            idleEmployees,
+		"abnormal_employees":        abnormalEmployees,
+	}
+	return result
 }
 
-// ─── REVENUE & FINANCIAL REPORT (Revenue Breakdown, Order Value Distribution, Profitability Metrics) ───
-func generateRevenueFinancialReport(orderCollection *mongo.Collection, startDate, endDate time.Time, period string) map[string]interface{}{
+// generateRevenueFinancialReport produces a revenue & financial report.
+func generateRevenueFinancialReport(orderCollection *mongo.Collection, startDate, endDate time.Time, period string) map[string]interface{} {
 	log.Printf("Generating %s Revenue & Financial Report...\n", period)
 	filter := bson.M{"created_at": bson.M{"$gte": startDate, "$lt": endDate}}
 	cursor, err := orderCollection.Find(context.TODO(), filter)
@@ -495,15 +568,15 @@ func generateRevenueFinancialReport(orderCollection *mongo.Collection, startDate
 	}
 	saveCSVTable(filepath.Join(reportDir, "revenue_financial_"+period+".csv"), csvHeaders, csvData)
 	return map[string]interface{}{
-			"total_revenue":       totalRevenue,
-			"total_orders":        orderCount,
-			"min_order_value":     minVal,
-			"max_order_value":     maxVal,
-			"avg_order_value":     avgVal,
-			"food_share_percent":  foodShare,
-			"drink_share_percent": drinkShare,
-			"avg_items_per_order": avgItemsPerOrder,
-		}
+		"total_revenue":       totalRevenue,
+		"total_orders":        orderCount,
+		"min_order_value":     minVal,
+		"max_order_value":     maxVal,
+		"avg_order_value":     avgVal,
+		"food_share_percent":  foodShare,
+		"drink_share_percent": drinkShare,
+		"avg_items_per_order": avgItemsPerOrder,
+	}
 }
 
 // ─── UTILITY FUNCTIONS ─────────────────────────────────────────────
@@ -601,18 +674,18 @@ func getMonthlyOrderCounts(orders []models.Order) map[string]int {
 	return monthly
 }
 
-func (repo *MongoRepository) DailyReport() {
-	repo.Report("daily")
+func (repo *MongoRepository) DailyReport() ([]byte, error) {
+	return repo.Report("daily")
 }
 
-func (repo *MongoRepository) WeeklyReport() {
-	repo.Report("weekly")
+func (repo *MongoRepository) WeeklyReport() ([]byte, error) {
+	return repo.Report("weekly")
 }
 
-func (repo *MongoRepository) MonthlyReport() {
-	repo.Report("monthly")
+func (repo *MongoRepository) MonthlyReport() ([]byte, error) {
+	return repo.Report("monthly")
 }
 
-func (repo *MongoRepository) YearlyReport() {
-	repo.Report("yearly")
+func (repo *MongoRepository) YearlyReport() ([]byte, error) {
+	return repo.Report("yearly")
 }

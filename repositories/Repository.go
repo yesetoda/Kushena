@@ -16,11 +16,11 @@ type RepositoryInterface interface {
 	CheckIn(id string) error
 	CheckOut(id string) error
 
-	Report2(interval string) 
-	DailyReport2()
-	WeeklyReport2()
-	MonthlyReport2()
-	YearlyReport2()
+	Report(interval string) ( []byte, error)
+	DailyReport()( []byte, error)
+	WeeklyReport()( []byte, error)
+	MonthlyReport()( []byte, error)
+	YearlyReport()( []byte, error)
 
 	CreateOrder(order models.Order) error
 	UpdateOrder(order *models.Order) error

@@ -8,6 +8,7 @@ import (
 
 	"github.com/yesetoda/kushena/controllers"
 	"github.com/yesetoda/kushena/infrastructures/auth_services"
+
 )
 
 type GinRoute struct {
@@ -21,10 +22,31 @@ func NewGinRoute(controller controllers.ContollerInterface, auth auth_services.A
 		Auth:       auth,
 	}
 }
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Allow all origins
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		// Allow specific headers
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization, X-Requested-With, Content-Length")
+		// Allow methods including PATCH and others
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+		// Allow credentials if needed
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		// For preflight requests, return immediately
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+		c.Next()
+	}
+}
+
 
 func (r *GinRoute) Run() error {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
+	router.Use(CORSMiddleware())
 	router.GET("/", r.Controller.Help)
 	router.POST("/employee/login", r.Controller.Login)
 
