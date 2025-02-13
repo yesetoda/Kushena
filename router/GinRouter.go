@@ -24,16 +24,11 @@ func NewGinRoute(controller controllers.ContollerInterface, auth auth_services.A
 }
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Allow all origins
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		// Allow specific headers
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization, X-Requested-With, Content-Length")
-		// Allow methods including PATCH and others
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
-		// Allow credentials if needed
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 
-		// For preflight requests, return immediately
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
 			return
