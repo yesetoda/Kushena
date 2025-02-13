@@ -16,11 +16,11 @@ type DrinkOrder struct {
 	Quantity float64            `json:"quantity" bson:"quantity"`
 }
 type Order struct {
-	Id         primitive.ObjectID `json:"id" bson:"_id"`
-	EmployeeId primitive.ObjectID `json:"employee_id" bson:"employee_id"`
-	TableId    string             `json:"table_id" bson:"table_id"`
-	Foods      []FoodOrder        `json:"foods" bson:"foods"`
-	Drinks     []DrinkOrder       `json:"drinks" bson:"drinks"`
+	Id          primitive.ObjectID `json:"id" bson:"_id"`
+	EmployeeId  primitive.ObjectID `json:"employee_id" bson:"employee_id"`
+	TableNumber int                `json:"table_number" bson:"table_number"`
+	Foods       []FoodOrder        `json:"foods" bson:"foods"`
+	Drinks      []DrinkOrder       `json:"drinks" bson:"drinks"`
 
 	TotalPrice float64   `json:"total_price" bson:"total_price"`
 	Status     string    `json:"status" bson:"status"`
