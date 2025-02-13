@@ -15,7 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/yesetoda/Kushena/models"
+	"github.com/yesetoda/kushena/models"
 
 )
 

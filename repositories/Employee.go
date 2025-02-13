@@ -7,9 +7,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"github.com/yesetoda/Kushena/infrastructures/password_services"
-	"github.com/yesetoda/Kushena/models"
-
+	"github.com/yesetoda/kushena/infrastructures/password_services"
+	"github.com/yesetoda/kushena/models"
 )
 
 func (repo *MongoRepository) CreateEmployee(Employee *models.Employee) error {
@@ -46,8 +45,8 @@ func (repo *MongoRepository) UpdateEmployee(Employee *models.Employee) error {
 		return err
 	}
 	if res.MatchedCount == 0 {
-        return fmt.Errorf("employee not found")
-    }
+		return fmt.Errorf("employee not found")
+	}
 	return nil
 
 }
@@ -67,12 +66,12 @@ func (repo *MongoRepository) DeleteEmployee(id string) error {
 	}
 	res, err := repo.EmployeeCollection.DeleteOne(context.TODO(), bson.M{"_id": eid})
 	if err != nil {
-        return err
-    }
+		return err
+	}
 	if res.DeletedCount == 0 {
 		return fmt.Errorf("employee not found")
-    }
-    return nil
+	}
+	return nil
 
 }
 func (repo *MongoRepository) GetAllEmployees() ([]models.Employee, error) {

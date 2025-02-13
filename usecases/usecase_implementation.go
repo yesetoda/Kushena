@@ -1,8 +1,8 @@
 package usecases
 
 import (
-	"github.com/yesetoda/Kushena/models"
-	"github.com/yesetoda/Kushena/repositories"
+	"github.com/yesetoda/kushena/models"
+	"github.com/yesetoda/kushena/repositories"
 )
 
 type UsecaseImplemented struct {

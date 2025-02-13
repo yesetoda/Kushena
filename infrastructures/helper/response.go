@@ -3,7 +3,7 @@ package helper
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/yesetoda/Kushena/models"
+	"github.com/yesetoda/kushena/models"
 )
 
 // Success Response

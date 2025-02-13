@@ -1,11 +1,13 @@
 package router
 
 import (
+	"log"
+	"os"
+
 	"github.com/gin-gonic/gin"
 
-	"github.com/yesetoda/Kushena/controllers"
-	"github.com/yesetoda/Kushena/infrastructures/auth_services"
-
+	"github.com/yesetoda/kushena/controllers"
+	"github.com/yesetoda/kushena/infrastructures/auth_services"
 )
 
 type GinRoute struct {
@@ -13,21 +15,22 @@ type GinRoute struct {
 	Auth       auth_services.AuthController
 }
 
-func NewGinRoute(controller controllers.ContollerInterface,auth auth_services.AuthController) *GinRoute {
+func NewGinRoute(controller controllers.ContollerInterface, auth auth_services.AuthController) *GinRoute {
 	return &GinRoute{
 		Controller: controller,
-		Auth: auth,
+		Auth:       auth,
 	}
 }
 
 func (r *GinRoute) Run() error {
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 	router.GET("/", r.Controller.Help)
 	router.POST("/employee/login", r.Controller.Login)
 
 	// self actions
-	router.POST("/checkin",r.Auth.AuthenticationMiddleware(), r.Controller.CheckIn)
-	router.POST("/checkout",r.Auth.AuthenticationMiddleware(), r.Controller.CheckOut)
+	router.POST("/checkin", r.Auth.AuthenticationMiddleware(), r.Controller.CheckIn)
+	router.POST("/checkout", r.Auth.AuthenticationMiddleware(), r.Controller.CheckOut)
 
 	report := router.Group("/report")
 	report.Use(r.Auth.RoleMiddleware("Manager"))
@@ -40,11 +43,11 @@ func (r *GinRoute) Run() error {
 	manager := router.Group("/manage")
 	manager.Use(r.Auth.RoleMiddleware("Manager"))
 	{
-			manager.POST("/employee", r.Controller.CreateEmployee)
-			manager.GET("/employee/:id", r.Controller.GetEmployeeById)
-			manager.PATCH("/employee", r.Controller.UpdateEmployee)
-			manager.DELETE("/employee/:id", r.Controller.DeleteEmployee)
-			manager.GET("/employees", r.Controller.GetAllEmployees)
+		manager.POST("/employee", r.Controller.CreateEmployee)
+		manager.GET("/employee/:id", r.Controller.GetEmployeeById)
+		manager.PATCH("/employee", r.Controller.UpdateEmployee)
+		manager.DELETE("/employee/:id", r.Controller.DeleteEmployee)
+		manager.GET("/employees", r.Controller.GetAllEmployees)
 	}
 	actions := router.Group("/action")
 	actions.Use(r.Auth.AuthenticationMiddleware())
@@ -54,20 +57,20 @@ func (r *GinRoute) Run() error {
 		actions.DELETE("/order/:id", r.Controller.DeleteOrder)
 		actions.GET("/order/:id", r.Controller.GetOrderById)
 		actions.GET("/orders", r.Controller.GetAllOrders)
-	
+
 		actions.POST("/food", r.Controller.CreateFood)
 		actions.PATCH("/food", r.Controller.UpdateFood)
 		actions.DELETE("/food/:id", r.Controller.DeleteFood)
 		actions.GET("/food/:id", r.Controller.GetFoodById)
 		actions.GET("/foods", r.Controller.GetAllFoods)
-	
+
 		actions.POST("/drink", r.Controller.CreateDrink)
 		actions.PATCH("/drink", r.Controller.UpdateDrink)
 		actions.DELETE("/drink/:id", r.Controller.DeleteDrink)
 		actions.GET("/drink/:id", r.Controller.GetDrinkById)
 		actions.GET("/drinks", r.Controller.GetAllDrinks)
 	}
-	
+
 	router.NoMethod(func(c *gin.Context) {
 		c.JSON(404, gin.H{"message": "Method not allowed"})
 	})
@@ -75,7 +78,11 @@ func (r *GinRoute) Run() error {
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(404, gin.H{"message": "Route not found"})
 	})
-
-	router.Run(":8080")
+	port := ":" + os.Getenv("PORT")
+	if port == "" {
+		log.Fatal("PORT environment variable not set", port)
+		port = ":8080"
+	}
+	router.Run(port)
 	return nil
 }

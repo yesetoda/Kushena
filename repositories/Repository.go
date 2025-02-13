@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"github.com/yesetoda/Kushena/models"
+	"github.com/yesetoda/kushena/models"
 
 )
 

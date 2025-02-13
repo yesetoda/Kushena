@@ -6,12 +6,11 @@ import (
 
 	"github.com/go-co-op/gocron"
 
-	"github.com/yesetoda/Kushena/controllers"
-	"github.com/yesetoda/Kushena/infrastructures/auth_services"
-	"github.com/yesetoda/Kushena/repositories"
-	"github.com/yesetoda/Kushena/router"
-	"github.com/yesetoda/Kushena/usecases"
-
+	"github.com/yesetoda/kushena/controllers"
+	"github.com/yesetoda/kushena/infrastructures/auth_services"
+	"github.com/yesetoda/kushena/repositories"
+	"github.com/yesetoda/kushena/router"
+	"github.com/yesetoda/kushena/usecases"
 )
 
 func scheduleReports(scheduler *gocron.Scheduler, repo repositories.RepositoryInterface, reportTime, reportDay, reportMonth string) {

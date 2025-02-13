@@ -6,10 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/yesetoda/Kushena/infrastructures/token_services"
-	"github.com/yesetoda/Kushena/models"
-	"github.com/yesetoda/Kushena/usecases"
-
+	"github.com/yesetoda/kushena/infrastructures/token_services"
+	"github.com/yesetoda/kushena/models"
+	"github.com/yesetoda/kushena/usecases"
 )
 
 type ControllerImplementation struct {
@@ -50,11 +49,11 @@ func (controller *ControllerImplementation) CreateOrder(c *gin.Context) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	claim,err := token_services.GetClaims(c)
+	claim, err := token_services.GetClaims(c)
 	if err != nil {
-        c.JSON(401, gin.H{"error": "Unauthorized"})
-        return
-    }
+		c.JSON(401, gin.H{"error": "Unauthorized"})
+		return
+	}
 	order.EmployeeId = claim.ID
 	order.CreatedAt = time.Now().UTC()
 

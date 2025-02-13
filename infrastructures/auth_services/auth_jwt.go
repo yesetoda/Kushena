@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/yesetoda/Kushena/infrastructures/token_services"
-	"github.com/yesetoda/Kushena/usecases"
+	"github.com/yesetoda/kushena/infrastructures/token_services"
+	"github.com/yesetoda/kushena/usecases"
 )
 
 type AuthController struct {

@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"github.com/yesetoda/Kushena/models"
+	"github.com/yesetoda/kushena/models"
 )
 
 func (repo *MongoRepository) CreateOrder(order models.Order) error {

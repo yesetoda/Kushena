@@ -3,8 +3,7 @@ package usecases
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/yesetoda/Kushena/models"
-
+	"github.com/yesetoda/kushena/models"
 )
 
 type UsecaseInterface interface {

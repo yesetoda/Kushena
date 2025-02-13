@@ -5,9 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/yesetoda/Kushena/infrastructures/email_services"
-	"github.com/yesetoda/Kushena/infrastructures/token_services"
-	"github.com/yesetoda/Kushena/models"
+	"github.com/yesetoda/kushena/infrastructures/email_services"
+	"github.com/yesetoda/kushena/infrastructures/token_services"
+	"github.com/yesetoda/kushena/models"
 
 )
 
@@ -57,6 +57,6 @@ func (usecase *UsecaseImplemented) CheckIn(id string) error {
 }
 
 func (usecase *UsecaseImplemented) CheckOut(id string) error {
-    err := usecase.Repo.CheckOut(id)
-    return err
+	err := usecase.Repo.CheckOut(id)
+	return err
 }

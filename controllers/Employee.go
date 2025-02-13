@@ -7,10 +7,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/yesetoda/Kushena/infrastructures/password_services"
-	"github.com/yesetoda/Kushena/infrastructures/token_services"
-	"github.com/yesetoda/Kushena/models"
-
+	"github.com/yesetoda/kushena/infrastructures/password_services"
+	"github.com/yesetoda/kushena/infrastructures/token_services"
+	"github.com/yesetoda/kushena/models"
 )
 
 func (controller *ControllerImplementation) CreateEmployee(c *gin.Context) {
@@ -34,8 +33,8 @@ func (controller *ControllerImplementation) CreateEmployee(c *gin.Context) {
 	Employee.Role = "Employee"
 	err = controller.Usecases.CreateEmployee(Employee)
 	if err != nil {
-		s = "error in Adding employee " +Employee.Name
-			c.JSON(400, gin.H{"error": s})
+		s = "error in Adding employee " + Employee.Name
+		c.JSON(400, gin.H{"error": s})
 		return
 	}
 	s = "Employee " + Employee.Name + " Added successfully"
@@ -79,7 +78,7 @@ func (controller *ControllerImplementation) UpdateEmployee(c *gin.Context) {
 	err := controller.Usecases.UpdateEmployee(Employee)
 	if err != nil {
 		s = "error in updating employee " + Employee.Name
-		c.JSON(400, gin.H{"error":s})
+		c.JSON(400, gin.H{"error": s})
 		return
 	}
 	s = "Employee " + Employee.Name + " updated successfully"

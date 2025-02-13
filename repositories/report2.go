@@ -13,8 +13,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/yesetoda/Kushena/infrastructures/analytics"
-
+	"github.com/yesetoda/kushena/infrastructures/analytics"
 )
 
 // Report2 generates all reports concurrently for daily, weekly, monthly, and yearly periods.

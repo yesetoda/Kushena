@@ -12,7 +12,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/yesetoda/Kushena/models"
+	"github.com/yesetoda/kushena/models"
 )
 
 func GenerateToken(employee *models.Employee, password, jwtSecret string) (string, error) {
