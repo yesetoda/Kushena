@@ -15,6 +15,7 @@ type RepositoryInterface interface {
 
 	CheckIn(id string) error
 	CheckOut(id string) error
+	Attendance(id string) ([]models.Attendance,error)
 
 	Report(interval string) ( []byte, error)
 	DailyReport()( []byte, error)

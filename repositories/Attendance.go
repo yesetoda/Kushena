@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/yesetoda/kushena/models"
 )
 
-func (repo *MongoRepository) Attendance(attendance_type, id string) error {
+func (repo *MongoRepository) TakeAttendance(attendance_type, id string) error {
 	fmt.Println(id, "checking ", attendance_type)
 	eid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -27,9 +28,34 @@ func (repo *MongoRepository) Attendance(attendance_type, id string) error {
 }
 
 func (repo *MongoRepository) CheckIn(id string) error {
-	return repo.Attendance("in", id)
+	return repo.TakeAttendance("in", id)
 }
 
 func (repo *MongoRepository) CheckOut(id string) error {
-	return repo.Attendance("out", id)
+	return repo.TakeAttendance("out", id)
+}
+
+func (repo *MongoRepository) Attendance(id string) ([]models.Attendance, error) {
+	eid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	cursor, err := repo.AttendanceCollection.Find(context.TODO(), bson.M{"employee_id": eid})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.TODO())
+	attendances := []models.Attendance{}
+	for cursor.Next(context.TODO()) {
+		var attendance models.Attendance
+		err := cursor.Decode(&attendance)
+		if err != nil {
+			return nil, err
+		}
+		attendances = append(attendances, attendance)
+	}
+	fmt.Println("attendance for ", id)
+	fmt.Println(attendances)
+
+	return attendances, nil
 }

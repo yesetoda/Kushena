@@ -60,3 +60,12 @@ func (usecase *UsecaseImplemented) CheckOut(id string) error {
 	err := usecase.Repo.CheckOut(id)
 	return err
 }
+
+func (usecase *UsecaseImplemented) Attendance(id string) ([]models.Attendance, error) {
+	var attendance []models.Attendance
+    attendance, err := usecase.Repo.Attendance(id)
+    if err != nil {
+        return nil, err
+    }
+    return attendance, nil
+}

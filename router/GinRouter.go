@@ -47,6 +47,7 @@ func (r *GinRoute) Run() error {
 
 	router.POST("/checkin", r.Auth.AuthenticationMiddleware(), r.Controller.CheckIn)
 	router.POST("/checkout", r.Auth.AuthenticationMiddleware(), r.Controller.CheckOut)
+	router.GET("/attendance", r.Auth.AuthenticationMiddleware(), r.Controller.Attendance)
 
 	report := router.Group("/report")
 	report.Use(r.Auth.RoleMiddleware("Manager"))

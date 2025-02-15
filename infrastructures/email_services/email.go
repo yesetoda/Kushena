@@ -108,7 +108,7 @@ func SendEmail(toEmail, title, body, link string) error {
 				</div>
 			</div>
 			<div class="footer">
-				© 2024 Your Company Name. All rights reserved.
+				© 2024 Kushena. All rights reserved.
 			</div>
 		</div>
 	</body>

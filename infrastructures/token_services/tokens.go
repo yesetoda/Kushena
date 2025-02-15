@@ -20,7 +20,7 @@ func GenerateToken(employee *models.Employee, password, jwtSecret string) (strin
 		return "", errors.New("invalid user name or password")
 	}
 
-	accessToken, err := createJWTToken(employee, jwtSecret, 120*time.Minute)
+	accessToken, err := createJWTToken(employee, jwtSecret, 24*30*time.Hour)
 	if err != nil {
 		return "", err
 	}

@@ -181,3 +181,29 @@ func (controller *ControllerImplementation) CheckOut(c *gin.Context) {
 	s = fmt.Sprintf("Goodbye %s", claim.Name)
 	c.JSON(200, gin.H{"message": s})
 }
+
+func (controller *ControllerImplementation) Attendance(c *gin.Context) {
+	claim, err := token_services.GetClaims(c)
+    s := ""
+    if err != nil {
+        s = claim.Name + " you donot have the required authorization for this task."
+        c.JSON(401, gin.H{"error": s})
+        return
+    }
+    id := claim.ID.Hex()
+    emp, err := controller.Usecases.GetEmployeeById(id)
+    if err != nil {
+        s = claim.Name + " not found among Employees."
+        c.JSON(404, gin.H{"error": s})
+        return
+    }
+	fmt.Println("employee", emp)
+	fmt.Println("claims",claim)
+    attendance, err := controller.Usecases.Attendance(id)
+	if err != nil {
+		s = claim.Name + "  failed to get attendance."
+        c.JSON(400, gin.H{"error": s})
+        return
+	}
+	c.JSON(200, attendance)
+}
