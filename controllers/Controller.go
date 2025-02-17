@@ -17,6 +17,7 @@ type ContollerInterface interface {
 	CheckIn(ctx *gin.Context)
 	CheckOut(ctx *gin.Context)
 	Attendance(ctx *gin.Context)
+	CheckStatus(ctx *gin.Context)
 
 	DailyReport(c *gin.Context)
 	MonthlyReport(c *gin.Context)
@@ -28,6 +29,7 @@ type ContollerInterface interface {
 	DeleteOrder(ctx *gin.Context)
 	GetOrderById(ctx *gin.Context)
 	GetAllOrders(ctx *gin.Context)
+	GetAllMyOrders(ctx *gin.Context)
 
 	CreateFood(ctx *gin.Context)
 	UpdateFood(ctx *gin.Context)

@@ -69,3 +69,26 @@ func (repo *MongoRepository) GetAllOrders() ([]models.Order, error) {
 	}
 	return orders, nil
 }
+
+func (repo *MongoRepository) GetAllMyOrders(id string) ([]models.Order, error) {
+	eid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+    }
+	var orders []models.Order
+	cursor, err := repo.OrderCollection.Find(context.Background(), bson.M{"employee_id":eid})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.Background())
+	for cursor.Next(context.Background()) {
+		var order models.Order
+		err := cursor.Decode(&order)
+		if err != nil {
+			return nil, err
+		}
+		orders = append(orders, order)
+	}
+	fmt.Println("orders", orders)
+	return orders, nil
+}

@@ -18,6 +18,7 @@ type UsecaseInterface interface {
 	CheckIn(id string) error
 	CheckOut(id string) error
 	Attendance(id string) ([]models.Attendance,error)
+	CheckStatus(id string) (models.Attendance, error)
 
 	DailyReport() ([]byte, error)
 	WeeklyReport() ([]byte, error)
@@ -29,6 +30,7 @@ type UsecaseInterface interface {
 	DeleteOrder(id string) error
 	GetOrderById(id string) (*models.Order, error)
 	GetAllOrders() ([]models.Order, error)
+	GetAllMyOrders(id string) ([]models.Order, error)
 
 	CreateFood(food models.Food) error
 	UpdateFood(food *models.Food) error

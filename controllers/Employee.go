@@ -184,26 +184,44 @@ func (controller *ControllerImplementation) CheckOut(c *gin.Context) {
 
 func (controller *ControllerImplementation) Attendance(c *gin.Context) {
 	claim, err := token_services.GetClaims(c)
-    s := ""
-    if err != nil {
-        s = claim.Name + " you donot have the required authorization for this task."
-        c.JSON(401, gin.H{"error": s})
-        return
-    }
-    id := claim.ID.Hex()
-    emp, err := controller.Usecases.GetEmployeeById(id)
-    if err != nil {
-        s = claim.Name + " not found among Employees."
-        c.JSON(404, gin.H{"error": s})
-        return
-    }
+	s := ""
+	if err != nil {
+		s = claim.Name + " you donot have the required authorization for this task."
+		c.JSON(401, gin.H{"error": s})
+		return
+	}
+	id := claim.ID.Hex()
+	emp, err := controller.Usecases.GetEmployeeById(id)
+	if err != nil {
+		s = claim.Name + " not found among Employees."
+		c.JSON(404, gin.H{"error": s})
+		return
+	}
 	fmt.Println("employee", emp)
-	fmt.Println("claims",claim)
-    attendance, err := controller.Usecases.Attendance(id)
+	fmt.Println("claims", claim)
+	attendance, err := controller.Usecases.Attendance(id)
 	if err != nil {
 		s = claim.Name + "  failed to get attendance."
-        c.JSON(400, gin.H{"error": s})
-        return
+		c.JSON(400, gin.H{"error": s})
+		return
+	}
+	c.JSON(200, attendance)
+}
+
+func (controller *ControllerImplementation) CheckStatus(c *gin.Context) {
+	claim, err := token_services.GetClaims(c)
+	s := ""
+	if err != nil {
+		s = claim.Name + " you donot have the required authorization for this task."
+		c.JSON(401, gin.H{"error": s})
+		return
+	}
+	id := claim.ID.Hex()
+	attendance, err := controller.Usecases.CheckStatus(id)
+	if err != nil {
+		s = claim.Name + " not found among attendances."
+		c.JSON(404, gin.H{"error": s})
+		return
 	}
 	c.JSON(200, attendance)
 }

@@ -45,6 +45,15 @@ func (usecase *UsecaseImplemented) GetAllOrders() ([]models.Order, error) {
 	return orders, nil
 }
 
+func (usecase *UsecaseImplemented) GetAllMyOrders(id string) ([]models.Order, error) {
+	var orders []models.Order
+	orders, err := usecase.Repo.GetAllMyOrders(id)
+	if err != nil {
+		return nil, err
+	}
+	return orders, nil
+}
+
 func (usecase *UsecaseImplemented) CreateFood(food models.Food) error {
 	err := usecase.Repo.CreateFood(food)
 	return err

@@ -48,6 +48,7 @@ func (r *GinRoute) Run() error {
 	router.POST("/checkin", r.Auth.AuthenticationMiddleware(), r.Controller.CheckIn)
 	router.POST("/checkout", r.Auth.AuthenticationMiddleware(), r.Controller.CheckOut)
 	router.GET("/attendance", r.Auth.AuthenticationMiddleware(), r.Controller.Attendance)
+	router.GET("/checkstatus", r.Auth.AuthenticationMiddleware(), r.Controller.CheckStatus)
 
 	report := router.Group("/report")
 	report.Use(r.Auth.RoleMiddleware("Manager"))
@@ -74,6 +75,7 @@ func (r *GinRoute) Run() error {
 		actions.DELETE("/order/:id", r.Controller.DeleteOrder)
 		actions.GET("/order/:id", r.Controller.GetOrderById)
 		actions.GET("/orders", r.Controller.GetAllOrders)
+		actions.GET("/myorders", r.Controller.GetAllMyOrders)
 
 		actions.POST("/food", r.Controller.CreateFood)
 		actions.PATCH("/food", r.Controller.UpdateFood)

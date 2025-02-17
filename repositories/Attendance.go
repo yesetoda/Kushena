@@ -7,6 +7,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/yesetoda/kushena/models"
 )
@@ -58,4 +59,21 @@ func (repo *MongoRepository) Attendance(id string) ([]models.Attendance, error) 
 	fmt.Println(attendances)
 
 	return attendances, nil
+}
+
+func (repo *MongoRepository) CheckStatus( id string) (models.Attendance, error) {
+	eid, err := primitive.ObjectIDFromHex(id)
+	var attendance models.Attendance 
+    if err != nil {
+        return attendance, err
+    }
+	
+    err = repo.AttendanceCollection.FindOne(context.TODO(),
+	bson.M{"employee_id": eid},
+	options.FindOne().SetSort(bson.M{"time": -1})).Decode(&attendance)
+    if err != nil {
+        return  attendance,err
+    }
+	return attendance, nil
+
 }

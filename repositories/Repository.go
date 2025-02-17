@@ -16,6 +16,7 @@ type RepositoryInterface interface {
 	CheckIn(id string) error
 	CheckOut(id string) error
 	Attendance(id string) ([]models.Attendance,error)
+	CheckStatus(id string) (models.Attendance, error)
 
 	Report(interval string) ( []byte, error)
 	DailyReport()( []byte, error)
@@ -28,6 +29,7 @@ type RepositoryInterface interface {
 	DeleteOrder(id string) error
 	GetOrderById(id string) (*models.Order, error)
 	GetAllOrders() ([]models.Order, error)
+	GetAllMyOrders(id string) ([]models.Order, error)
 
 	CreateFood(food models.Food) error
 	UpdateFood(food *models.Food) error

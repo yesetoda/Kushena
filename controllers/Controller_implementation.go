@@ -158,6 +158,20 @@ func (controller *ControllerImplementation) GetAllOrders(c *gin.Context) {
 	c.JSON(200, orders)
 }
 
+func (controller *ControllerImplementation) GetAllMyOrders(c *gin.Context) {
+	claim,err := token_services.GetClaims(c)
+	if err != nil {
+		c.JSON(401, gin.H{"error": "Unauthorized"})
+        return
+    }
+	orders, err := controller.Usecases.GetAllMyOrders(claim.ID.Hex())
+	if err != nil {
+		c.JSON(404, gin.H{"error": "Orders not found"})
+		return
+	}
+	c.JSON(200, orders)
+}
+
 func (controller *ControllerImplementation) CreateFood(c *gin.Context) {
 	var food models.Food
 	if err := c.ShouldBindJSON(&food); err != nil {

@@ -69,3 +69,8 @@ func (usecase *UsecaseImplemented) Attendance(id string) ([]models.Attendance, e
     }
     return attendance, nil
 }
+ func (usecase *UsecaseImplemented) CheckStatus(id string) (models.Attendance, error) {
+	status, err := usecase.Repo.CheckStatus(id)
+	return status, err
+    
+}
