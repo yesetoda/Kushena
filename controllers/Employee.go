@@ -225,3 +225,21 @@ func (controller *ControllerImplementation) CheckStatus(c *gin.Context) {
 	}
 	c.JSON(200, attendance)
 }
+
+func (controller *ControllerImplementation) TodaysWorkingTime(c *gin.Context) {
+	claim, err := token_services.GetClaims(c)
+	s := ""
+	if err != nil {
+		s = claim.Name + " you donot have the required authorization for this task."
+		c.JSON(401, gin.H{"error": s})
+		return
+	}
+	id := claim.ID.Hex()
+	workingtime, err := controller.Usecases.TodaysWorkingTime(id)
+	if err != nil {
+		s = claim.Name + "  failed to get working time."
+		c.JSON(400, gin.H{"error": s})
+		return
+	}
+	c.JSON(200, gin.H{"working_time":int(workingtime)})
+}

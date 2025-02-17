@@ -68,12 +68,58 @@ func (repo *MongoRepository) CheckStatus( id string) (models.Attendance, error) 
         return attendance, err
     }
 	
-    err = repo.AttendanceCollection.FindOne(context.TODO(),
+	resp,err := repo.AttendanceCollection.CountDocuments(context.TODO(), bson.M{"employee_id": eid})
+    if err != nil {
+		return  attendance,err
+    }
+	if resp == 0 {
+		return attendance, nil
+	}
+	err = repo.AttendanceCollection.FindOne(context.TODO(),
 	bson.M{"employee_id": eid},
 	options.FindOne().SetSort(bson.M{"time": -1})).Decode(&attendance)
-    if err != nil {
-        return  attendance,err
-    }
-	return attendance, nil
+	return attendance, err
 
+}
+
+func (repo *MongoRepository) TodaysWorkingTime(id string) (float64, error) {
+	eid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+        return 0, err
+    }
+	startTime := time.Now().AddDate(0, 0, -1) // Last 1 day
+	endTime := time.Now()
+
+	cursor, err := repo.AttendanceCollection.Aggregate(context.TODO(), bson.A{
+		bson.M{"$match": bson.M{
+			"employee_id": eid,
+			"time":        bson.M{"$gte": startTime, "$lte": endTime},
+		}},
+		bson.M{"$sort": bson.M{"time": 1}}, // Sort by time ascending
+	})
+	if err != nil {
+		return 0, err
+	}
+	var records []models.Attendance
+	if err = cursor.All(context.TODO(), &records); err != nil {
+		return 0, err
+	}
+
+	var totalWorkDuration float64
+	var lastCheckIn time.Time
+	var hasCheckIn bool
+
+	for _, record := range records {
+		if record.Type == "in" {
+			lastCheckIn = record.Time
+			hasCheckIn = true
+		} else if record.Type == "out" && hasCheckIn {
+			totalWorkDuration += record.Time.Sub(lastCheckIn).Minutes()
+			hasCheckIn = false
+		}
+	}
+	if hasCheckIn { // If there's an ongoing shift at the end of the day, add it to the total work duration
+        totalWorkDuration += time.Since(lastCheckIn).Minutes()
+    }
+	return totalWorkDuration, nil
 }

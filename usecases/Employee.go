@@ -74,3 +74,8 @@ func (usecase *UsecaseImplemented) Attendance(id string) ([]models.Attendance, e
 	return status, err
     
 }
+
+func (usecase *UsecaseImplemented) TodaysWorkingTime(id string) (float64, error) {
+	duration, err := usecase.Repo.TodaysWorkingTime(id)
+	return duration, err
+}

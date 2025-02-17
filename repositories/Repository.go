@@ -1,8 +1,8 @@
 package repositories
 
 import (
-	"github.com/yesetoda/kushena/models"
 
+	"github.com/yesetoda/kushena/models"
 )
 
 type RepositoryInterface interface {
@@ -17,6 +17,7 @@ type RepositoryInterface interface {
 	CheckOut(id string) error
 	Attendance(id string) ([]models.Attendance,error)
 	CheckStatus(id string) (models.Attendance, error)
+	TodaysWorkingTime(id string) (float64, error)
 
 	Report(interval string) ( []byte, error)
 	DailyReport()( []byte, error)

@@ -19,6 +19,7 @@ type UsecaseInterface interface {
 	CheckOut(id string) error
 	Attendance(id string) ([]models.Attendance,error)
 	CheckStatus(id string) (models.Attendance, error)
+	TodaysWorkingTime(id string) (float64, error)
 
 	DailyReport() ([]byte, error)
 	WeeklyReport() ([]byte, error)
