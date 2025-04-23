@@ -122,5 +122,5 @@ go run main.go
 MIT License
 
 ## Contact
-For inquiries, reach out to `yesetoda@gmail.com`
+For inquiries, reach out to `yeneinehseiba@gmail.com`
 
